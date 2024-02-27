@@ -39,6 +39,8 @@ class _SearchPageState extends State<SearchPage> {
     _initCamera();
     _getLocation();
   }
+  
+  
 
   Future<void> _initCamera() async {
     final cameras = await availableCameras();
@@ -134,6 +136,8 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     if (cameraController == null || !cameraController!.value.isInitialized) {
@@ -145,7 +149,20 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('InsightLens'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsPage()),
+              );
+            },
+          ),
+        ],
       ),
+      
+      
       body: Column(
         children: <Widget>[
           Expanded(
@@ -168,6 +185,76 @@ class _SearchPageState extends State<SearchPage> {
           ),
           if (currentLocation != null)
             Text('Location: Lat:${currentLocation!.latitude}, Long:${currentLocation!.longitude}'),
+        ],
+      ),
+    );
+    
+  }
+
+   
+}
+
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool notificationsEnabled = true;
+  double volume = 0.5;
+  // Add other settings variables here
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Settings"),
+      ),
+      body: ListView(
+        children: <Widget>[
+          SwitchListTile(
+            title: Text("Enable Notifications"),
+            value: notificationsEnabled,
+            onChanged: (bool value) {
+              setState(() {
+                notificationsEnabled = value;
+              });
+              // Implement saving this setting preferably
+            },
+          ),
+          ListTile(
+            title: Text("Account Settings"),
+            subtitle: Text("Manage your account"),
+            onTap: () {
+              // Navigate to account settings page or show account info
+            },
+          ),
+          Slider(
+            value: volume,
+            min: 0,
+            max: 1,
+            divisions: 10,
+            label: volume.round().toString(),
+            onChanged: (double value) {
+              setState(() {
+                volume = value;
+              });
+              // Implement saving this setting preferably
+            },
+          ),
+          ListTile(
+            title: Text("Privacy Policy"),
+            onTap: () {
+              // Open privacy policy
+            },
+          ),
+          ListTile(
+            title: Text("Terms of Service"),
+            onTap: () {
+              // Open terms of service
+            },
+          ),
+          // Add more settings here as needed
         ],
       ),
     );
