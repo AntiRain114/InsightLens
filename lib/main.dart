@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(MyApp());
 
@@ -82,6 +83,44 @@ class _SearchPageState extends State<SearchPage> {
     currentLocation = await location.getLocation();
   }
 
+  Future<String> getImageBase64() async {
+  final ImagePicker _picker = ImagePicker();
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (image != null) {
+    final bytes = await File(imagePath).readAsBytes(); // Use asynchronous read
+  return base64Encode(bytes);
+  } else {
+    return '';
+  }
+}
+
+Future<String> uploadImage(String base64Image) async {
+  const String apiKey = "YOUR_OPENAI_API_KEY";
+  var headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $apiKey"
+  };
+  var payload = jsonEncode({
+    "model": "gpt-4-vision-preview",
+    "data": base64Image, // Make sure this aligns with your API's expected format.
+  });
+
+  var response = await http.post(
+    Uri.parse("https://api.openai.com/v1/endpoint"), // Adjust the URL to your API's endpoint
+    headers: headers,
+    body: payload,
+  );
+
+  if (response.statusCode == 200) {
+    // Assuming the response is a direct string for simplicity
+    return response.body; // Adjust based on your API's actual response structure
+  } else {
+    // Handle non-200 responses or add more nuanced error handling as needed
+    return "API call failed: ${response.statusCode}";
+  }
+}
+
   Future<void> _takePicture() async {
     if (cameraController == null || !cameraController!.value.isInitialized) {
       return;
@@ -101,12 +140,12 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Future<void> _sendData(String imagePath, LocationData locationData) async {
+   Future<void> _sendData(String imagePath, LocationData locationData) async {
     setState(() {
       isUploading = true;
     });
 
-    Uri apiUri = Uri.parse('Your_GPT-4.0_API_Endpoint');
+    Uri apiUri = Uri.parse('GPTAPI');
 
     var request = http.MultipartRequest('POST', apiUri)
       ..fields['latitude'] = locationData.latitude.toString()
