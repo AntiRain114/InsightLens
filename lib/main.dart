@@ -6,6 +6,9 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+
+
 
 void main() => runApp(MyApp());
 
@@ -83,98 +86,150 @@ class _SearchPageState extends State<SearchPage> {
     currentLocation = await location.getLocation();
   }
 
-  Future<String> getImageBase64() async {
-  final ImagePicker _picker = ImagePicker();
-  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  Future<String> convertImageToBase64(XFile image) async {
+  final bytes = await image.readAsBytes(); // Read the image file
+  return base64Encode(bytes); // Encode to base64
+}
 
-  if (image != null) {
-    final bytes = await File(imagePath).readAsBytes(); // Use asynchronous read
-  return base64Encode(bytes);
-  } else {
-    return '';
+Future<void> cacheBase64Image(String base64Image) async {
+  final directory = await getApplicationDocumentsDirectory(); // Get directory
+  final filePath = '${directory.path}/cachedImage_${DateTime.now().millisecondsSinceEpoch}.txt'; // Define path
+  final file = File(filePath); // Create a File instance
+  await file.writeAsString(base64Image); // Write the base64 string to the file
+  print('Base64 image cached at $filePath');
+}
+
+  Future<void> _takePicture() async {
+  if (cameraController == null || !cameraController!.value.isInitialized) {
+    return;
+  }
+
+  try {
+    final XFile? image = await cameraController!.takePicture();
+    if (image != null) {
+      final String base64Image = await convertImageToBase64(image);
+      await cacheBase64Image(base64Image);
+      // At this point, the base64Image is both converted and cached.
+      print('Image captured and cached in base64 format');
+    } else {
+      print("No image captured.");
+    }
+  } catch (e) {
+    print(e); // Handle errors
   }
 }
 
-Future<String> uploadImage(String base64Image) async {
+//   Future<String> getImageBase64() async {
+//   final ImagePicker _picker = ImagePicker();
+//   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+//   if (image != null) {
+//     final bytes = await File(imagePath).readAsBytes(); // Use asynchronous read
+//   return base64Encode(bytes);
+//   } else {
+//     return '';
+//   }
+// }
+
+
+
+  // Future<void> _takePicture() async {
+  //   if (cameraController == null || !cameraController!.value.isInitialized) {
+  //     return;
+  //   }
+
+  //   try {
+  //     final image = await cameraController!.takePicture();
+  //     setState(() {
+  //       imagePath = image.path;
+  //     });
+  //     await _getLocation();
+  //     if (currentLocation != null) {
+  //       await _sendData(image.path, currentLocation!);
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  //  Future<void> _sendData(String imagePath, LocationData locationData) async {
+  //   setState(() {
+  //     isUploading = true;
+  //   });
+
+  //   Uri apiUri = Uri.parse('GPTAPI');
+
+  //   var request = http.MultipartRequest('POST', apiUri)
+  //     ..fields['latitude'] = locationData.latitude.toString()
+  //     ..fields['longitude'] = locationData.longitude.toString()
+  //     ..files.add(await http.MultipartFile.fromPath(
+  //       'image', 
+  //       imagePath,
+  //     ));
+
+  //   try {
+  //     var streamedResponse = await request.send();
+  //     var response = await http.Response.fromStream(streamedResponse);
+      
+  //     if (response.statusCode == 200) {
+  //       var data = jsonDecode(response.body);
+  //       // Handle the data received from the API
+  //       print(data);
+  //     } else {
+  //       print('Failed to load data');
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   } finally {
+  //     setState(() {
+  //       isUploading = false;
+  //     });
+  //   }
+  // }
+ Future<void> uploadImageWithOpenAI() async {
   const String apiKey = "YOUR_OPENAI_API_KEY";
+
+  final directory = await getApplicationDocumentsDirectory();
+  final files = await directory.list().toList();
+  final cachedImageFiles = files.where((file) => file.path.endsWith('.txt')).toList();
+
+  if (cachedImageFiles.isEmpty) {
+    print("No cached image found.");
+    return;
+  }
+
+  final cachedImageFile = cachedImageFiles.last;
+  final file = File(cachedImageFile.path);
+  String base64Image = await file.readAsString();
+
   var headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer $apiKey"
   };
+
   var payload = jsonEncode({
     "model": "gpt-4-vision-preview",
-    "data": base64Image, // Make sure this aligns with your API's expected format.
+    "messages": [
+      {
+        "role": "user",
+        "content": "What's in this image?\n\ndata:image/jpeg;base64,$base64Image"
+      }
+    ],
+    "max_tokens": 300
   });
 
   var response = await http.post(
-    Uri.parse("https://api.openai.com/v1/endpoint"), // Adjust the URL to your API's endpoint
+    Uri.parse("https://api.openai.com/v1/chat/completions"),
     headers: headers,
     body: payload,
   );
 
   if (response.statusCode == 200) {
-    // Assuming the response is a direct string for simplicity
-    return response.body; // Adjust based on your API's actual response structure
+    print("Response from OpenAI: ${response.body}");
   } else {
-    // Handle non-200 responses or add more nuanced error handling as needed
-    return "API call failed: ${response.statusCode}";
+    print("Failed to upload image to OpenAI: ${response.statusCode}");
   }
 }
-
-  Future<void> _takePicture() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) {
-      return;
-    }
-
-    try {
-      final image = await cameraController!.takePicture();
-      setState(() {
-        imagePath = image.path;
-      });
-      await _getLocation();
-      if (currentLocation != null) {
-        await _sendData(image.path, currentLocation!);
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-   Future<void> _sendData(String imagePath, LocationData locationData) async {
-    setState(() {
-      isUploading = true;
-    });
-
-    Uri apiUri = Uri.parse('GPTAPI');
-
-    var request = http.MultipartRequest('POST', apiUri)
-      ..fields['latitude'] = locationData.latitude.toString()
-      ..fields['longitude'] = locationData.longitude.toString()
-      ..files.add(await http.MultipartFile.fromPath(
-        'image', 
-        imagePath,
-      ));
-
-    try {
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-      
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        // Handle the data received from the API
-        print(data);
-      } else {
-        print('Failed to load data');
-      }
-    } catch (e) {
-      print(e);
-    } finally {
-      setState(() {
-        isUploading = false;
-      });
-    }
-  }
-
   
 
   @override
