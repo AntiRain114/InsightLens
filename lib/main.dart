@@ -7,6 +7,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'result_page.dart';
+
 
 
 
@@ -108,9 +110,35 @@ Future<void> cacheBase64Image(String base64Image) async {
     final XFile? image = await cameraController!.takePicture();
     if (image != null) {
       final String base64Image = await convertImageToBase64(image);
+      
       await cacheBase64Image(base64Image);
-      // At this point, the base64Image is both converted and cached.
-      print('Image captured and cached in base64 format');
+
+      // Get the current location
+      await _getLocation();
+
+      if (currentLocation != null) {
+        final String locationDescription = 'This photo was taken at latitude ${currentLocation!.latitude} and longitude ${currentLocation!.longitude}.';
+
+        // At this point, the base64Image is both converted and cached, and the location is retrieved.
+        print('Image captured and cached in base64 format with location: $locationDescription');
+
+        // Upload the image with location description
+        await uploadImageWithOpenAI(base64Image, locationDescription);
+        final String apiResponse = await uploadImageWithOpenAI(base64Image, locationDescription);
+
+        // Navigate to the ResultPage and pass the apiResponse
+        Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultPage(apiResponse: apiResponse),
+        ),
+      );
+      } else {
+        print('Location not available. Uploading image without location.');
+        await uploadImageWithOpenAI(base64Image, '');
+
+        
+      }
     } else {
       print("No image captured.");
     }
@@ -186,16 +214,17 @@ Future<void> cacheBase64Image(String base64Image) async {
   //     });
   //   }
   // }
- Future<void> uploadImageWithOpenAI() async {
-  const String apiKey = "YOUR_OPENAI_API_KEY";
+Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
+  final String apiKey = Platform.environment['OPENAI_API_KEY'] ?? '';
+
 
   final directory = await getApplicationDocumentsDirectory();
   final files = await directory.list().toList();
   final cachedImageFiles = files.where((file) => file.path.endsWith('.txt')).toList();
 
-  if (cachedImageFiles.isEmpty) {
+    if (cachedImageFiles.isEmpty) {
     print("No cached image found.");
-    return;
+    return 'Error: No cached image found.';
   }
 
   final cachedImageFile = cachedImageFiles.last;
@@ -212,7 +241,7 @@ Future<void> cacheBase64Image(String base64Image) async {
     "messages": [
       {
         "role": "user",
-        "content": "What's in this image?\n\ndata:image/jpeg;base64,$base64Image"
+        "content": "What's in this image?\n\n$locationDescription\n\ndata:image/jpeg;base64,$base64Image"
       }
     ],
     "max_tokens": 300
@@ -225,9 +254,12 @@ Future<void> cacheBase64Image(String base64Image) async {
   );
 
   if (response.statusCode == 200) {
-    print("Response from OpenAI: ${response.body}");
+    final jsonResponse = jsonDecode(response.body);
+    final apiResponse = jsonResponse['choices'][0]['message']['content'];
+    return apiResponse;
   } else {
     print("Failed to upload image to OpenAI: ${response.statusCode}");
+    return 'Error: ${response.statusCode}';
   }
 }
   
