@@ -52,12 +52,16 @@ jobs:
         run: flutter pub get
 
       - name: Build APK Release
-        run: flutter build apk --release 
+        run: flutter build apk --release
+        env:
+          API_KEY: ${{ env.API_KEY }}
        
         
 
       - name: Build an AppBundle
-        run: flutter build appbundle --release 
+        run: flutter build appbundle --release
+        env:
+          API_KEY: ${{ env.API_KEY }}
         
 
       - name: Save APK to Artifacts
