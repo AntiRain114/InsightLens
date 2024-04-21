@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'result_page.dart';
+import 'loading_page.dart';
+import 'history_page.dart';
 
 
 
@@ -38,6 +40,7 @@ class _SearchPageState extends State<SearchPage> {
   Location location = Location();
   String? imagePath;
   bool isUploading = false;
+  List<Map<String, dynamic>> searchHistory = [];
 
   @override
   void initState() {
@@ -49,21 +52,63 @@ class _SearchPageState extends State<SearchPage> {
   
 
   Future<void> _initCamera() async {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
+  final cameras = await availableCameras();
+  final firstCamera = cameras.first;
 
-    cameraController = CameraController(
-      firstCamera,
-      ResolutionPreset.medium,
-    );
+  cameraController = CameraController(
+    firstCamera,
+    ResolutionPreset.medium,
+  );
 
-    cameraController!.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
+  await cameraController!.initialize();
+
+  // Set the desired preview size
+  final previewSize = cameraController!.value.previewSize!;
+  final aspectRatio = previewSize.width / previewSize.height;
+  final desiredWidth = MediaQuery.of(context).size.width;
+  final desiredHeight = desiredWidth / aspectRatio;
+
+  cameraController!.value = cameraController!.value.copyWith(
+    previewSize: Size(desiredWidth, desiredHeight),
+  );
+
+  if (!mounted) {
+    return;
   }
+
+  setState(() {});
+}
+Widget _buildCameraPreview() {
+  if (cameraController == null || !cameraController!.value.isInitialized) {
+    return Container();
+  }
+
+  final previewSize = cameraController!.value.previewSize!;
+  final aspectRatio = previewSize.width / previewSize.height;
+
+  return AspectRatio(
+    aspectRatio: aspectRatio,
+    child: GestureDetector(
+      onScaleStart: _handleScaleStart,
+      onScaleUpdate: _handleScaleUpdate,
+      child: CameraPreview(cameraController!),
+    ),
+  );
+}
+
+double _currentScale = 1.0;
+double _baseScale = 1.0;
+
+void _handleScaleStart(ScaleStartDetails details) {
+  _baseScale = _currentScale;
+}
+
+void _handleScaleUpdate(ScaleUpdateDetails details) {
+  setState(() {
+    _currentScale = _baseScale * details.scale;
+    cameraController!.setZoomLevel(_currentScale);
+  });
+}
 
   Future<void> _getLocation() async {
     bool _serviceEnabled;
@@ -107,11 +152,16 @@ Future<void> cacheBase64Image(String base64Image) async {
   }
 
   try {
-    final XFile? image = await cameraController!.takePicture();
-    if (image != null) {
+      final XFile? image = await cameraController!.takePicture();
+      if (image != null) {
       final String base64Image = await convertImageToBase64(image);
       
       await cacheBase64Image(base64Image);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoadingPage()),
+      );
 
       // Get the current location
       await _getLocation();
@@ -124,15 +174,27 @@ Future<void> cacheBase64Image(String base64Image) async {
 
         // Upload the image with location description
         await uploadImageWithOpenAI(base64Image, locationDescription);
+       print('Uploading image to OpenAI API...');
         final String apiResponse = await uploadImageWithOpenAI(base64Image, locationDescription);
+        print('API response received: $apiResponse');
 
         // Navigate to the ResultPage and pass the apiResponse
+        Navigator.pop(context);
         Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultPage(apiResponse: apiResponse),
-        ),
-      );
+          context,
+          MaterialPageRoute(builder: (context) => ResultPage(apiResponse: apiResponse)),
+        );
+        final record = {
+          'image': await image.readAsBytes(),
+          'description': locationDescription,
+          'apiResponse': apiResponse,
+        };
+        setState(() {
+          searchHistory.insert(0, record);
+          if (searchHistory.length > 2) {
+            searchHistory.removeLast();
+          }
+        });
       } else {
         print('Location not available. Uploading image without location.');
         await uploadImageWithOpenAI(base64Image, '');
@@ -143,7 +205,23 @@ Future<void> cacheBase64Image(String base64Image) async {
       print("No image captured.");
     }
   } catch (e) {
-    print(e); // Handle errors
+    print('Exception occurred: $e');
+  // Pop the LoadingPage if an exception occurs
+  Navigator.pop(context);
+  // Handle the exception, e.g., show an error message
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Exception'),
+      content: Text(e.toString()),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('OK'),
+        ),
+      ],
+    ),
+  );
   }
 }
 
@@ -237,13 +315,24 @@ Future<String> uploadImageWithOpenAI(String base64Image, String locationDescript
   };
 
   var payload = jsonEncode({
-    "model": "gpt-4-vision-preview",
+    "model": "gpt-4-turbo",
     "messages": [
-      {
-        "role": "user",
-        "content": "What's in this image?\n\n$locationDescription\n\ndata:image/jpeg;base64,$base64Image"
-      }
-    ],
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What's in this image? The picture was take at\n\n$locationDescription\n"
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "data:image/jpeg;base64,$base64Image"
+          }
+        }
+      ]
+    }
+  ],
     "max_tokens": 300
   });
 
@@ -268,8 +357,12 @@ Future<String> uploadImageWithOpenAI(String base64Image, String locationDescript
   Widget build(BuildContext context) {
     if (cameraController == null || !cameraController!.value.isInitialized) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body:  Column(
+      children: [
+        Expanded(child: _buildCameraPreview()), ],
+        ),
       );
+
     }
 
     return Scaffold(
@@ -287,7 +380,35 @@ Future<String> uploadImageWithOpenAI(String base64Image, String locationDescript
           ),
         ],
       ),
-      
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text('Navigation'),
+            ),
+            ListTile(
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('History'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HistoryPage(searchHistory: searchHistory)),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       
       body: Column(
         children: <Widget>[
