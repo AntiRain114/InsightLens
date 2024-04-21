@@ -303,6 +303,13 @@ Future<void> cacheBase64Image(String base64Image) async {
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
   final apiKey = Platform.environment['API_KEY'];
 
+  if (apiKey == null) {
+    print("API key not found in environment variables.");
+    return 'Error: API key not found.';
+  } else {
+    print("API key: yes");
+  }
+
 
   final directory = await getApplicationDocumentsDirectory();
   final files = await directory.list().toList();
