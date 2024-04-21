@@ -42,12 +42,12 @@ jobs:
         run: flutter pub get
 
       - name: Build APK Release
-        run: flutter build apk --dart-define=API_KEY=${{ secrets.OPENAI_API_KEY }} --release
+        run: flutter build apk --release --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
        
         
 
       - name: Build an AppBundle
-        run: flutter build appbundle --dart-define=API_KEY=${{ secrets.OPENAI_API_KEY }} --release
+        run: flutter build appbundle --release --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
         
 
       - name: Save APK to Artifacts
