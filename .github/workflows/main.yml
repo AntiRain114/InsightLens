@@ -41,15 +41,15 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Create .env file
-        run: |
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
-
       - name: Build APK Release
         run: flutter build apk --release
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Build an AppBundle
         run: flutter build appbundle --release
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Save APK to Artifacts
         uses: actions/upload-artifact@v3
