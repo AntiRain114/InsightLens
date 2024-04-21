@@ -35,6 +35,7 @@ jobs:
           
       - name: Decrypt API key
         run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
           echo "${{ secrets.ENCRYPTION_PASSPHRASE }}" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
         env:
           ENCRYPTION_PASSPHRASE: ${{ secrets.ENCRYPTION_PASSPHRASE }}
