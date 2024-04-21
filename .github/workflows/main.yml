@@ -45,6 +45,7 @@ jobs:
         run: flutter build apk --release
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        
 
       - name: Build an AppBundle
         run: flutter build appbundle --release
