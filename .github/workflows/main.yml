@@ -32,6 +32,18 @@ jobs:
       - name: Create git tag
         run: |
           git tag "v${{ steps.get_flutter_app_version.outputs.TAG_VERSION }}"
+          
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      - name: Decrypt API Key
+        run: |
+          echo "***" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
+          
+      
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -42,12 +54,12 @@ jobs:
         run: flutter pub get
 
       - name: Build APK Release
-        run: flutter build apk --release --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        run: flutter build apk --release 
        
         
 
       - name: Build an AppBundle
-        run: flutter build appbundle --release --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        run: flutter build appbundle --release 
         
 
       - name: Save APK to Artifacts
