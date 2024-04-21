@@ -17,7 +17,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() => runApp(MyApp());
 
-final String apiKey = Platform.environment['OPENAI_API_KEY'] ?? '';
+final String apiKey = String.fromEnvironment('OPENAI_API_KEY');
 
 
 class MyApp extends StatelessWidget {
