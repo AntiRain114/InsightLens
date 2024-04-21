@@ -42,15 +42,13 @@ jobs:
         run: flutter pub get
 
       - name: Build APK Release
-        run: flutter build apk --release
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: flutter build apk --dart-define=API_KEY=${{ secrets.OPENAI_API_KEY }} --release
+       
         
 
       - name: Build an AppBundle
-        run: flutter build appbundle --release
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: flutter build appbundle --dart-define=API_KEY=${{ secrets.OPENAI_API_KEY }} --release
+        
 
       - name: Save APK to Artifacts
         uses: actions/upload-artifact@v3
