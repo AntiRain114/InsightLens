@@ -15,10 +15,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
-Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
+
+final String apiKey = Platform.environment['OPENAI_API_KEY'] ?? '';
+
 
 class MyApp extends StatelessWidget {
   @override
