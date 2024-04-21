@@ -32,6 +32,13 @@ jobs:
       - name: Create git tag
         run: |
           git tag "v${{ steps.get_flutter_app_version.outputs.TAG_VERSION }}"
+          
+      - name: Decrypt API key
+        run: |
+          echo "${{ secrets.ENCRYPTION_PASSPHRASE }}" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
+        env:
+          ENCRYPTION_PASSPHRASE: ${{ secrets.ENCRYPTION_PASSPHRASE }}
+      
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
