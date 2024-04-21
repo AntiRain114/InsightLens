@@ -33,15 +33,13 @@ jobs:
         run: |
           git tag "v${{ steps.get_flutter_app_version.outputs.TAG_VERSION }}"
           
-      - name: Import GPG Key
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
+      - name: Grant execute permission to script
+        run: chmod +x decrypt_secret.sh
+        
+      - name: Decrypt large secret
+        run: ./decrypt_secret.sh
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-
-      - name: Decrypt API Key
-        run: |
-          echo "***" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
           
       
 
