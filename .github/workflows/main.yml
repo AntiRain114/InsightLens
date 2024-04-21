@@ -33,12 +33,13 @@ jobs:
         run: |
           git tag "v${{ steps.get_flutter_app_version.outputs.TAG_VERSION }}"
           
-      - name: Decrypt API key
+      - name: Import GPG Key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
-          echo "${{ secrets.ENCRYPTION_PASSPHRASE }}" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
-        env:
-          ENCRYPTION_PASSPHRASE: ${{ secrets.ENCRYPTION_PASSPHRASE }}
+
+      - name: Decrypt API Key
+        run: |
+          echo "***" | gpg --batch --yes --decrypt --passphrase-fd 0 --output api_key.txt api_key.txt.gpg
       
 
       - name: Install Flutter
