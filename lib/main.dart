@@ -10,11 +10,17 @@ import 'package:path_provider/path_provider.dart';
 import 'result_page.dart';
 import 'loading_page.dart';
 import 'history_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
 
-void main() => runApp(MyApp());
+Future main() async {
+  await dotenv.load(fileName: ".env");
+  runApp(MyApp());
+}
+
+final String apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
 
 class MyApp extends StatelessWidget {
   @override
@@ -293,7 +299,6 @@ Future<void> cacheBase64Image(String base64Image) async {
   //   }
   // }
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
-  final String apiKey = Platform.environment['OPENAI_API_KEY'] ?? '';
 
 
   final directory = await getApplicationDocumentsDirectory();
