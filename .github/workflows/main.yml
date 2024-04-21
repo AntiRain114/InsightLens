@@ -52,17 +52,14 @@ jobs:
         run: flutter pub get
 
       - name: Build APK Release
-        run: |
-          flutter build apk --release
-          echo "Build logs:"
-          cat /home/runner/work/InsightLens/InsightLens/build/app/outputs/flutter-apk/build.log
+        run: flutter build apk --release --api-key "${{ env.API_KEY }}
         env:
           API_KEY: ${{ env.API_KEY }}
        
         
 
       - name: Build an AppBundle
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --api-key "${{ env.API_KEY }}
         env:
           API_KEY: ${{ env.API_KEY }}
         
