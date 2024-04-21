@@ -17,7 +17,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() => runApp(MyApp());
 
-final String apiKey = String.fromEnvironment('OPENAI_API_KEY');
+
 
 
 class MyApp extends StatelessWidget {
@@ -53,14 +53,10 @@ class _SearchPageState extends State<SearchPage> {
     _getLocation();
   }
 
-  Future<String> getApiKey() async {
-  final file = File('api_key.txt');
-  final apiKey = await file.readAsString();
-  return apiKey.trim();
-}
 
 
-  
+
+
   
 
   Future<void> _initCamera() async {
@@ -305,7 +301,7 @@ Future<void> cacheBase64Image(String base64Image) async {
   //   }
   // }
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
-  final String apiKey = await getApiKey();
+  final apiKey = Platform.environment['API_KEY'];
 
 
   final directory = await getApplicationDocumentsDirectory();
