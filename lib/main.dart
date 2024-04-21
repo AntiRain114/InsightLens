@@ -17,6 +17,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() => runApp(MyApp());
 
+class Environment {
+  static const String apiKey = String.fromEnvironment('API_KEY');
+}
+
 
 
 
@@ -300,8 +304,13 @@ Future<void> cacheBase64Image(String base64Image) async {
   //     });
   //   }
   // }
+
+
+
+
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
-  final apiKey = String.fromEnvironment('API_KEY');
+  const String apiKey  = Environment.apiKey;
+  
 
   if (apiKey == null) {
     print("API key not found in environment variables.");
