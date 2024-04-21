@@ -301,7 +301,7 @@ Future<void> cacheBase64Image(String base64Image) async {
   //   }
   // }
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
-  final apiKey = Platform.environment['API_KEY'];
+  final apiKey = String.fromEnvironment('API_KEY');
 
   if (apiKey == null) {
     print("API key not found in environment variables.");
