@@ -52,6 +52,14 @@ class _SearchPageState extends State<SearchPage> {
     _initCamera();
     _getLocation();
   }
+
+  Future<String> getApiKey() async {
+  final file = File('api_key.txt');
+  final apiKey = await file.readAsString();
+  return apiKey.trim();
+}
+
+
   
   
 
@@ -297,7 +305,7 @@ Future<void> cacheBase64Image(String base64Image) async {
   //   }
   // }
 Future<String> uploadImageWithOpenAI(String base64Image, String locationDescription) async {
-  final String apiKey = Platform.environment['OPENAI_API_KEY'] ?? '';
+  final String apiKey = await getApiKey();
 
 
   final directory = await getApplicationDocumentsDirectory();
