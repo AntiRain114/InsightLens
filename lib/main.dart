@@ -11,6 +11,8 @@ import 'result_page.dart';
 import 'loading_page.dart';
 import 'history_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'agreement_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -32,10 +34,52 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SearchPage(),
+      home: FutureBuilder<bool>(
+        future: _showAgreementDialog(context),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else {
+            if (snapshot.data == true) {
+              return SearchPage();
+            } else {
+              return AgreementDialog(onAgree: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => SearchPage()),
+                );
+              });
+            }
+          }
+        },
+      ),
     );
   }
+
+  Future<bool> _showAgreementDialog(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final agreed = prefs.getBool('agreementAccepted') ?? false;
+
+    if (!agreed) {
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AgreementDialog(onAgree: () {
+            prefs.setBool('agreementAccepted', true);
+            Navigator.of(context).pop(true);
+          });
+        },
+      );
+      return result ?? false;
+    }
+
+    return true;
+  }
 }
+
 
 class SearchPage extends StatefulWidget {
   @override
