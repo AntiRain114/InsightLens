@@ -13,7 +13,10 @@ InsightLens is a mobile application that allows users to capture images, identif
 - Settings page for managing app preferences
 - Privacy policy and terms of service pages
 - Search history and saved results for quick access
-
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test.png)
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test2.png)
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test3.png)
+- 
 ## Getting Started
 
 To get started with InsightLens, follow these steps:
@@ -34,7 +37,9 @@ To get started with InsightLens, follow these steps:
   OPENAI_API_KEY=YOUR_API_KEY
   ```
 
-5. Run the app:flutter run
+5. You need to add your own firebase settings files, namely google-services.json (path is /android/app) and firebase_options.dart (path is /lib)
+
+6. Run the app:flutter run
 
 
 ## Deployment
