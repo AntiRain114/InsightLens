@@ -1,20 +1,75 @@
-<<<<<<< HEAD
-TEST
-=======
-# myfirstapp
+# InsightLens
 
-A new Flutter project.
+InsightLens is a mobile application that allows users to capture images, identify objects within the images using AI, and retrieve relevant information about the identified objects. The app leverages the OpenAI API for image recognition and provides a user-friendly interface for seamless interaction.
+
+## Features
+
+- Camera functionality to capture images
+- Image preprocessing and caching for efficient storage and retrieval
+- Integration with the OpenAI API for object recognition and information retrieval
+- User authentication and account management using Firebase Authentication
+- Email verification for secure user registration
+- Password reset functionality via email
+- Settings page for managing app preferences
+- Privacy policy and terms of service pages
+- Search history and saved results for quick access
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+To get started with InsightLens, follow these steps:
 
-A few resources to get you started if this is your first Flutter project:
+1. Clone the repository:git clone https://github.com/your-username/InsightLens.git
+2. Install the required dependencies:flutter pub get
+3. Set up Firebase:
+- Create a new Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
+- Enable Firebase Authentication and configure the sign-in methods (email/password)
+- Add your Android and iOS app to the Firebase project
+- Download the `google-services.json` file for Android and `GoogleService-Info.plist` file for iOS and place them in the respective directories (`android/app` and `ios/Runner`)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+4. Configure OpenAI API:
+- Sign up for an OpenAI API key at [https://beta.openai.com/signup/](https://beta.openai.com/signup/)
+- Create a `.env` file in the root directory of the project
+- Add the following line to the `.env` file, replacing `YOUR_API_KEY` with your actual OpenAI API key:
+  ```
+  OPENAI_API_KEY=YOUR_API_KEY
+  ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
->>>>>>> cc094f5 (Initial commit)
+5. Run the app:flutter run
+
+
+## Deployment
+
+To deploy InsightLens, follow these steps:
+
+1. Build the release version of the app:
+- For Android:
+  ```
+  flutter build apk --release
+  ```
+- For iOS:
+  ```
+  flutter build ios --release
+  ```
+
+2. Sign the release build:
+- For Android, sign the APK using your keystore
+- For iOS, configure code signing in Xcode
+
+3. Upload the signed build to the respective app stores (Google Play Store for Android, App Store for iOS)
+
+4. Configure Firebase Hosting:
+- Enable Firebase Hosting in your Firebase project
+- Set up your custom domain (if desired)
+- Deploy the web version of your app to Firebase Hosting
+
+## Contributing
+
+Contributions to InsightLens are welcome! If you find any bugs or have suggestions for improvements, please open an issue or submit a pull request.
+
+## License
+
+InsightLens is released under the [MIT License](LICENSE).
+
+## Contact
+
+If you have any questions or inquiries, please contact us at zhongjiezhe1973@hotmail.com.
