@@ -14,6 +14,10 @@ import 'package:flutter/foundation.dart'
 ///   options: DefaultFirebaseOptions.currentPlatform,
 /// );
 /// ```
+/// 
+class Environment {
+  static const String webKey = String.fromEnvironment('WEB_KEY');
+}
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {

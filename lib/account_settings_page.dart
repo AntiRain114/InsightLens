@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:email_validator/email_validator.dart';
 import 'main.dart';
+import 'registration_page.dart';
+import 'reset_password_page.dart';
 
 
 class AccountSettingsPage extends StatefulWidget {
@@ -147,13 +149,23 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 child: Text("Login"),
               ),
               ElevatedButton(
-                onPressed: _register,
-                child: Text("Register"),
-              ),
-              TextButton(
-                onPressed: _resetPassword,
-                child: Text("Forgot Password?"),
-              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegistrationPage()),
+                );
+              },
+              child: Text('Register'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ResetPasswordPage()),
+                );
+              },
+              child: Text('Forgot Password?'),
+            ),
             ],
           ),
         ),
