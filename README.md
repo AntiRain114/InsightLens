@@ -7,6 +7,7 @@ InsightLens is a mobile application that allows users to capture images, identif
 - Camera functionality to capture images
 - Image preprocessing and caching for efficient storage and retrieval
 - Integration with the OpenAI API for object recognition and information retrieval
+- At the same time, upload user positioning to help AI associate and make identification more accurate!
 - User authentication and account management using Firebase Authentication
 - Email verification for secure user registration
 - Password reset functionality via email
