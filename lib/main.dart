@@ -13,11 +13,24 @@ import 'history_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'agreement_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'privacy_policy_page.dart';
+import 'terms_of_service_page.dart';
+import 'account_settings_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 
 
 
-void main() => runApp(MyApp());
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+}
 
 class Environment {
   static const String apiKey = String.fromEnvironment('API_KEY');
@@ -34,52 +47,86 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FutureBuilder<bool>(
-        future: _showAgreementDialog(context),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else {
-            if (snapshot.data == true) {
-              return SearchPage();
-            } else {
-              return AgreementDialog(onAgree: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => SearchPage()),
-                );
-              });
-            }
-          }
-        },
-      ),
+      home: AgreementPage(),
     );
-  }
-
-  Future<bool> _showAgreementDialog(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final agreed = prefs.getBool('agreementAccepted') ?? false;
-
-    if (!agreed) {
-      final result = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return AgreementDialog(onAgree: () {
-            prefs.setBool('agreementAccepted', true);
-            Navigator.of(context).pop(true);
-          });
-        },
-      );
-      return result ?? false;
-    }
-
-    return true;
   }
 }
 
+class AgreementPage extends StatefulWidget {
+  @override
+  _AgreementPageState createState() => _AgreementPageState();
+}
+
+class _AgreementPageState extends State<AgreementPage> {
+  int _countdown = 5;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(oneSec, (Timer timer) {
+      if (_countdown == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _countdown--;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Important Agreement',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'By using this software, you agree not to trust its advice regarding whether potentially toxic substances, animals, plants, and fungi are dangerous or edible. The information provided by this software should not be relied upon for determining the safety or edibility of any substance or organism.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _countdown == 0
+                  ? () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => SearchPage()),
+                      );
+                    }
+                  : null,
+              child: Text('I Agree'),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Button will be enabled in $_countdown seconds',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class SearchPage extends StatefulWidget {
   @override
@@ -517,7 +564,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool notificationsEnabled = true;
   double volume = 0.5;
-  // Add other settings variables here
+  String selectedApi = 'openai'; // Default selected API
+
+  List<String> availableApis = ['openai', 'Coming Soon']; // List of available APIs
 
   @override
   Widget build(BuildContext context) {
@@ -538,12 +587,15 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: Text("Account Settings"),
-            subtitle: Text("Manage your account"),
-            onTap: () {
-              // Navigate to account settings page or show account info
-            },
-          ),
+  title: Text("Account Settings"),
+  subtitle: Text("Manage your account"),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AccountSettingsPage()),
+    );
+  },
+),
           Slider(
             value: volume,
             min: 0,
@@ -558,17 +610,42 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: Text("Privacy Policy"),
-            onTap: () {
-              // Open privacy policy
-            },
+            title: Text("API Selection"),
+            subtitle: Text("Select the API to use"),
+            trailing: DropdownButton<String>(
+              value: selectedApi,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedApi = newValue!;
+                });
+                // Implement saving this setting preferably
+              },
+              items: availableApis.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
           ),
           ListTile(
-            title: Text("Terms of Service"),
-            onTap: () {
-              // Open terms of service
-            },
-          ),
+  title: Text("Privacy Policy"),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+    );
+  },
+),
+          ListTile(
+  title: Text("Terms of Service"),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TermsOfServicePage()),
+    );
+  },
+),
           // Add more settings here as needed
         ],
       ),
