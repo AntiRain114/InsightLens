@@ -3,29 +3,39 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:email_validator/email_validator.dart';
 
 
+// A StatefulWidget to handle user registration.
 class RegistrationPage extends StatefulWidget {
   @override
+  // Create the state for the RegistrationPage.
   _RegistrationPageState createState() => _RegistrationPageState();
 }
 
+// State class for RegistrationPage to manage registration operations.
 class _RegistrationPageState extends State<RegistrationPage> {
+  // Key to maintain the state of the form.
   final _formKey = GlobalKey<FormState>();
+  // Text editing controllers to manage email and password inputs.
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // Instance of FirebaseAuth to handle authentication tasks.
   FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Function to handle user registration.
   void _register() async {
+    // Validate form fields before proceeding.
     if (_formKey.currentState!.validate()) {
       try {
+        // Attempt to create a new user account using email and password.
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
-        // Registration successful
+        // Check if registration was successful and handle email verification.
         User? user = userCredential.user;
         if (user != null && !user.emailVerified) {
           await user.sendEmailVerification();
+          // Display a dialog to inform the user about the verification email.
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -36,8 +46,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   TextButton(
                     child: Text('OK'),
                     onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Close the dialog.
+                      Navigator.of(context).pop(); // Navigate back.
                     },
                   ),
                 ],
@@ -46,6 +56,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           );
         }
       } on FirebaseAuthException catch (e) {
+        // Handle errors like weak password or email already in use.
         if (e.code == 'weak-password') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('The password provided is too weak.')),
@@ -60,22 +71,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   @override
+  // Build method that describes the part of the user interface represented by this widget.
   Widget build(BuildContext context) {
     return Scaffold(
+      // AppBar with a title.
       appBar: AppBar(
-        title: Text('Registration'),
+        title: Text('Registration'),  // Title of the AppBar.
       ),
+      // Body of the Scaffold using SingleChildScrollView to allow scrolling.
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey,
+          key: _formKey,  // Associate the form key.
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Text field for user's email input.
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'Email'),  // Label for the email field.
                 validator: (value) {
+                  // Validate the email field.
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
                   }
@@ -85,11 +101,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   return null;
                 },
               ),
+              // Text field for user's password input.
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
+                decoration: InputDecoration(labelText: 'Password'), // Label for the password field.
+                obscureText: true,  // Obscure text for security.
                 validator: (value) {
+                  // Validate the password field.
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
@@ -103,6 +121,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 },
               ),
               SizedBox(height: 16.0),
+              // Button to initiate the registration process.
               ElevatedButton(
                 onPressed: _register,
                 child: Text('Register'),
