@@ -7,13 +7,21 @@ InsightLens is a mobile application that allows users to capture images, identif
 - Camera functionality to capture images
 - Image preprocessing and caching for efficient storage and retrieval
 - Integration with the OpenAI API for object recognition and information retrieval
+- At the same time, upload user positioning to help AI associate and make identification more accurate!
 - User authentication and account management using Firebase Authentication
 - Email verification for secure user registration
 - Password reset functionality via email
 - Settings page for managing app preferences
 - Privacy policy and terms of service pages
 - Search history and saved results for quick access
-
+- This is search page
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test.png)
+- This is account page
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test2.png)
+- This is result page
+- ![Image text](https://github.com/AntiRain114/PIC/blob/6086f74dddc63b84b784787b79b4e26212cc1ed8/test3.png)
+- This is the warning 
+- ![Image text](https://github.com/AntiRain114/PIC/blob/ae098866899e6ec6921b03cc315eaba55def810a/test4.jpg)
 ## Getting Started
 
 To get started with InsightLens, follow these steps:
@@ -34,7 +42,9 @@ To get started with InsightLens, follow these steps:
   OPENAI_API_KEY=YOUR_API_KEY
   ```
 
-5. Run the app:flutter run
+5. You need to add your own firebase settings files, namely google-services.json (path is /android/app) and firebase_options.dart (path is /lib)
+
+6. Run the app:flutter run
 
 
 ## Deployment
