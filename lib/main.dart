@@ -105,7 +105,7 @@ class _AgreementPageState extends State<AgreementPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'By using this software, you agree not to trust its advice...', // Agreement text.
+                'By using this software, you agree not to trust its advice regarding whether potentially toxic substances, animals, plants, and fungi are dangerous or edible. The information provided by this software should not be relied upon for determining the safety or edibility of any substance or organism.', // Agreement text.
                 textAlign: TextAlign.center,
               ),
             ),
