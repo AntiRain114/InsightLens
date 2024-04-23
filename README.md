@@ -1,6 +1,6 @@
 # InsightLens
 
-InsightLens is a mobile application that allows users to capture images, identify objects within the images using AI, and retrieve relevant information about the identified objects. The app leverages the OpenAI API for image recognition and provides a user-friendly interface for seamless interaction.
+InsightLens is a mobile application that allows users to capture images, identify objects within the images using AI, and retrieve relevant information about the identified objects. The app leverages the OpenAI API for image recognition and provides a user-friendly interface for seamless interaction. The purpose of designing this software is that conventional image recognition software is still not accurate enough. Therefore, the author chose to add the location of the photo taken in the query statement to help the large model identify the photographed items with higher accuracy.
 
 ## Features
 
